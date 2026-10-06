@@ -1,0 +1,52 @@
+digraph pipeline {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=11, nodesep=0.35, ranksep=0.45, pad=0.3, bgcolor="white", label="Pipeline CI/CD — Sistema de Gestión de Inventario", labelloc=t, fontsize=16];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled", fillcolor="#ffffff", color="#5b6370", penwidth=1.2];
+  edge  [fontname="Helvetica", fontsize=9, color="#5b6370"];
+
+  subgraph cluster_trig {
+    label="Disparadores"; style="rounded,dashed"; color="#999999";
+    pr   [label="Pull request\nhacia main", fillcolor="#eef2ff"];
+    push [label="Push / merge\na main", fillcolor="#eef2ff"];
+    tag  [label="Tag vX.Y.Z\nen main", fillcolor="#eef2ff"];
+  }
+
+  subgraph cluster_ci {
+    label="CI  (.github/workflows/ci.yml)"; style="rounded"; color="#1f6feb"; fontcolor="#1f6feb";
+    lint  [label="1. Lint + auditoría\ncheckout · npm ci\nESLint · npm audit"];
+    test  [label="2. Pruebas\nJest + cobertura\nreporte JUnit"];
+    iac   [label="3. Validar IaC\nterraform fmt/validate\nTrivy config"];
+    build [label="4. Imagen Docker\nbuild · smoke test\nTrivy image"];
+    pushimg [label="5. Publicar en GHCR\n:sha-xxxxxxx · :main\n(solo push a main)", fillcolor="#e8f5e9"];
+  }
+
+  subgraph cluster_cd {
+    label="CD  (.github/workflows/cd.yml)"; style="rounded"; color="#c8102e"; fontcolor="#c8102e";
+    promote [label="6. Promover imagen\nsha-xxxxxxx → vX.Y.Z\n+ latest"];
+    approve [label="7. Aprobación\nambiente production", shape=diamond, fillcolor="#fff3cd"];
+    deploy  [label="8. Desplegar en VM Azure\nSSH · compose pull/up"];
+    verify  [label="9. Verificar\n/health = vX.Y.Z"];
+    release [label="10. GitHub Release\nnotas automáticas", fillcolor="#e8f5e9"];
+    rollback [label="Rollback automático\na versión anterior", fillcolor="#fde2e4"];
+  }
+
+  fail [label="✖ Pipeline falla\nmerge bloqueado\n(rama main protegida)", fillcolor="#fde2e4", color="#c8102e"];
+
+  pr -> lint; push -> lint;
+  lint -> test; lint -> iac;
+  test -> build; iac -> build;
+  build -> pushimg [label="push a main"];
+  tag -> promote;
+  pushimg -> promote [style=dotted, label="imagen validada"];
+  promote -> approve;
+  approve -> deploy [label="aprobado"];
+  deploy -> verify;
+  verify -> release [label="OK"];
+  verify -> rollback [label="falla", color="#c8102e", fontcolor="#c8102e"];
+
+  lint -> fail  [style=dashed, color="#c8102e", label="error lint / vuln. alta"];
+  test -> fail  [style=dashed, color="#c8102e", label="prueba falla"];
+  iac -> fail   [style=dashed, color="#c8102e", label="IaC inválida / crítica"];
+  build -> fail [style=dashed, color="#c8102e", label="build / smoke / CVE crítica"];
+  promote -> fail [style=dashed, color="#c8102e", label="sin imagen CI / tag fuera de main"];
+}
