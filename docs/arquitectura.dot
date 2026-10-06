@@ -1,0 +1,47 @@
+digraph arquitectura {
+  rankdir=TB;
+  graph [fontname="Helvetica", fontsize=11, pad=0.3, nodesep=0.4, ranksep=0.6, bgcolor="white", label="Arquitectura de la solución", labelloc=t, fontsize=16];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled", fillcolor="#ffffff", color="#5b6370"];
+  edge  [fontname="Helvetica", fontsize=9, color="#5b6370"];
+
+  dev  [label="Equipo de\ndesarrollo", shape=ellipse, fillcolor="#eef2ff"];
+  user [label="Usuarios\n(bodega / admin)", shape=ellipse, fillcolor="#eef2ff"];
+
+  subgraph cluster_gh {
+    label="GitHub"; style="rounded"; color="#1f2328";
+    repo [label="Repositorio Git\nmain protegida · PR"];
+    gha  [label="GitHub Actions\nCI · CD"];
+    ghcr [label="GHCR\nregistro de imágenes", fillcolor="#e8f5e9"];
+    sec  [label="Secrets +\nambiente production", fillcolor="#fff3cd"];
+  }
+
+  tf [label="Terraform\n(infra/terraform)", fillcolor="#f3e8ff"];
+
+  subgraph cluster_az {
+    label="Microsoft Azure · rg-inventario-prod"; style="rounded"; color="#0078d4"; fontcolor="#0078d4";
+    pip [label="IP pública + DNS\n*.cloudapp.azure.com"];
+    nsg [label="NSG\n80/tcp · 22/tcp", fillcolor="#fde2e4"];
+    subgraph cluster_vnet {
+      label="VNet 10.20.0.0/16 · snet-app 10.20.1.0/24"; style="rounded,dashed"; color="#0078d4";
+      subgraph cluster_vm {
+        label="VM Ubuntu 24.04 · Standard_B1s · Docker Compose"; style="rounded"; color="#5b6370";
+        app [label="Contenedor app\nNode.js 20 · :3000\n(publicado en :80)"];
+        db  [label="Contenedor db\nPostgreSQL 16 · :5432\n(red interna)"];
+        vol [label="Volumen\npgdata", shape=cylinder, fillcolor="#e8f5e9"];
+      }
+    }
+  }
+
+  dev -> repo [label="push / PR"];
+  repo -> gha [label="eventos"];
+  gha -> ghcr [label="push imagen"];
+  sec -> gha [style=dashed];
+  dev -> tf [label="terraform apply"];
+  tf -> pip [label="aprovisiona", style=dashed, color="#7c3aed"];
+  gha -> app [label="SSH: compose pull/up"];
+  ghcr -> app [label="docker pull", style=dotted];
+  user -> pip [label="HTTP"];
+  pip -> nsg -> app;
+  app -> db [label="SQL"];
+  db -> vol;
+}
