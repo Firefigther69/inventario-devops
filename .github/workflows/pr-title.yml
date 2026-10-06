@@ -1,0 +1,27 @@
+# Valida que el título del PR cumpla Conventional Commits.
+# Como los PR se integran con "squash merge", el título se convierte en el commit de main.
+name: PR Title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-title:
+    name: Título Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar título
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "Título: $TITLE"
+          if echo "$TITLE" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|infra|revert)(\([a-z0-9-]+\))?!?: .{5,}$'; then
+            echo "OK"
+          else
+            echo "::error::El título debe seguir 'tipo(alcance): descripción'. Ej: feat(api): agregar alertas de stock"
+            exit 1
+          fi
