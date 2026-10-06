@@ -1,0 +1,30 @@
+# Dependencias y artefactos
+node_modules/
+coverage/
+reports/
+dist/
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+
+# Terraform: estado y variables locales (contienen datos sensibles)
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+*.tfplan
+.terraform.lock.hcl.bak
+
+# Sistema / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
