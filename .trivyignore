@@ -1,0 +1,13 @@
+# Excepciones revisadas y justificadas por el equipo (riesgo aceptado). Ver docs/APROVISIONAMIENTO.md.
+
+# AVD-AZU-0047: ingreso desde Internet. Es intencional: la regla Allow-HTTP publica la aplicación web
+# (puerto 80). PostgreSQL no se expone.
+AVD-AZU-0047
+
+# AVD-AZU-0048: falso positivo. No existe regla RDP (3389); se activa por source_port_range = "*".
+AVD-AZU-0048
+
+# AVD-AZU-0050: SSH abierto. Requerido porque los runners alojados de GitHub usan IP dinámicas.
+# Mitigación: autenticación solo por clave (contraseñas deshabilitadas) y variable allowed_ssh_cidr
+# para restringir el rango cuando se use un runner con IP fija.
+AVD-AZU-0050
