@@ -1,0 +1,33 @@
+#cloud-config
+# Configuración inicial del host, ejecutada una sola vez al crear la VM.
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - curl
+
+write_files:
+  - path: /opt/inventario/docker-compose.yml
+    encoding: b64
+    content: ${compose_b64}
+    permissions: "0644"
+  - path: /opt/inventario/.env
+    permissions: "0600"
+    content: |
+      IMAGE=${image}
+      APP_VERSION=bootstrap
+      APP_PORT=80
+      NODE_ENV=production
+      POSTGRES_USER=inventario
+      POSTGRES_PASSWORD=${db_password}
+      POSTGRES_DB=inventario
+
+runcmd:
+  # Swap de 1 GB: la VM B1s tiene 1 GB de RAM para app + PostgreSQL.
+  - fallocate -l 1G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  - echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  - systemctl enable --now docker
+  - usermod -aG docker ${admin_username}
+  - chown -R ${admin_username}:${admin_username} /opt/inventario
+  # Primer arranque: si la imagen aún no existe en GHCR, el CD la levantará después.
+  - cd /opt/inventario && (docker compose pull && docker compose up -d --no-build) || echo "Imagen no disponible todavía; esperando primer despliegue del CD"
