@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventario</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Gestión de Inventario</h1>
+    <span id="version" class="badge">versión …</span>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Nuevo producto</h2>
+      <form id="form">
+        <input name="sku" placeholder="SKU (ej. GAS-15KG)" required>
+        <input name="nombre" placeholder="Nombre" required>
+        <input name="categoria" placeholder="Categoría">
+        <input name="stock" type="number" min="0" placeholder="Stock" value="0">
+        <input name="stockMinimo" type="number" min="0" placeholder="Stock mínimo" value="0">
+        <input name="precio" type="number" min="0" step="1" placeholder="Precio" value="0">
+        <button type="submit">Agregar</button>
+      </form>
+      <p id="msg" role="status"></p>
+    </section>
+    <section class="card">
+      <h2>Productos</h2>
+      <div class="tabla">
+        <table>
+          <thead><tr><th>SKU</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Precio</th><th></th></tr></thead>
+          <tbody id="filas"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

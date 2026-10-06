@@ -1,0 +1,5 @@
+# Copiar a terraform.tfvars (no se versiona) y completar.
+subscription_id = "00000000-0000-0000-0000-000000000000"
+location        = "eastus"
+ssh_public_key  = "ssh-ed25519 AAAA... deploy-inventario"
+image           = "ghcr.io/firefigther69/inventario-devops:latest"
