@@ -16,6 +16,11 @@ ENV NODE_ENV=production \
     PORT=3000 \
     APP_VERSION=${APP_VERSION}
 
+# npm/npx no se usan en ejecución: se eliminan para reducir superficie de ataque
+# (el npm incluido en la imagen base arrastra dependencias con CVE críticas).
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY app/package.json ./
